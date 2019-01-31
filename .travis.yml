@@ -6,8 +6,15 @@ language: cpp
 compiler:
   - gcc
 
+env:
+  global:
+  - PERL_MM_OPT=INSTALL_BASE=/home/travis/perl5
+  - PERL_MB_OPT="--install_base /home/travis/perl5"
+  - PERL_LOCAL_LIB_ROOT=/home/travis/perl5
+  - PERL5LIB=/home/travis/perl5/lib/perl5
+
 install:
-  - cpanm --installdeps --cpanfile ./.travis/cpanfile ./.travis
+  - cpanm --installdeps -n -q .travis
 
 script:
   - make
