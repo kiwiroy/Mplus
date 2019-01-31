@@ -9,7 +9,7 @@ sub run_example_ok {
     my ($out, $err, $xit) = capture {
         system { $script } $script;
     };
-    is $xit, 0, 'success';
+    is $xit, 0, "success for $script";
     like $out, qr/elapsed time/i, 'reporting elapsed time ok';
     like $out, qr/complete/, 'completed';
 }

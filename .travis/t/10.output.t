@@ -44,6 +44,7 @@ sub table_file_ok {
         'alt optimized target diversity',
         'core members'
     ], 'header columns correct';
+    cmp_ok $table->size, '>', 1, 'table has realistic size';
     $table->each(
         sub {
             my ($core, $entries) = @$_[0,9];
