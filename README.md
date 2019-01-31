@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/NCGRP/Mplus.svg?branch=master)](https://travis-ci.org/NCGRP/Mplus)
+
 # Mplus
 
 C++ program that implements M+ optimization algorithm for core collection assembly
