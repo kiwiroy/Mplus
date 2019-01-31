@@ -1,2 +1,10 @@
-m+1
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache/*
+configure
+depcomp
 eg.out/*
+install-sh
+m+1
+missing
