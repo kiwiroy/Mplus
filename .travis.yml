@@ -6,8 +6,12 @@ language: cpp
 compiler:
   - gcc
 
+install:
+  - cpanm --installdeps --cpanfile ./.travis/cpanfile ./.travis
+
 script:
   - make
+  - cd .travis; prove
 
 addons:
   apt:
