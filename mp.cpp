@@ -189,9 +189,9 @@ void mp(
 		double AltRandomTargetDiversity;
 		double StartingDiversity;
 		double TempAltOptimizedActiveDiversity;
-		double AltOptimizedActiveDiversity;
-		double OptimizedTargetDiversity;
-		double AltOptimizedTargetDiversity;
+		double AltOptimizedActiveDiversity = 0.0;
+		double OptimizedTargetDiversity = 0.0;
+		double AltOptimizedTargetDiversity = 0.0;
 		double best;
 		double nnew;
 		vector<vector<vector<int> > > AlleleList;
@@ -221,7 +221,7 @@ void mp(
 		
 	
 		//set up a recovery file for each thread that saves progress as program runs
-		const char* RecoveryFilePath;
+		const char* RecoveryFilePath = NULL;
 		if ( MakeRecovery == 0 ) // only write the recovery file to disk when option = 0
 		{
 			stringstream ss;
