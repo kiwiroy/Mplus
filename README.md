@@ -33,10 +33,10 @@ where
        i.e. the "ideal" or "best" core, using the A* search algorithm, write output to 
        idealcorefile.
 
-**Notes** Missing data must be coded as 9999. To validate input files, omit all
-options. m+1 uses OpenMP for parallelization on multicore machines. Default is
+**Notes** Missing data must be coded as `9999`. To validate input files, omit all
+options. `m+1` uses OpenMP for parallelization on multicore machines. Default is
 single core M+ algorithm, and multicore A* algorithm.  To change behavior,
-modify variable 'parallelism_enabled' in file m+.cpp.
+modify variable `parallelism_enabled` in file [`m+.cpp`](https://github.com/NCGRP/Mplus/blob/4381af9396263ca2ea3d4b58f1cb25d6a0d0b8ca/m%2B.cpp#L1313).
 
 ### Examples
 
