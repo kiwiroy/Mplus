@@ -15,9 +15,10 @@ env:
 
 install:
   - cpanm --installdeps -n -q .travis
+  - autoreconf -i
 
 script:
-  - make
+  - ./configure && make
   - cd .travis; prove
 
 addons:
