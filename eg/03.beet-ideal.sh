@@ -1,7 +1,7 @@
 #!/bin/sh
 
 toplevel=$(git rev-parse --show-toplevel)
-data=$toplevel
+data=$toplevel/data
 output=$toplevel/eg.out
 name=$(basename $0 .sh)
 

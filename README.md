@@ -40,14 +40,14 @@ modify variable `parallelism_enabled` in file [`m+.cpp`](https://github.com/NCGR
 
 ### Examples
 
-    ./m+1 ./beet.var ./beet.dat -m 3 28 2 3 ./beetout.txt
-    ./m+1 ./beet.var ./beet.dat -m 3 28 2 3 ./beetoutk.txt -k beet.ker
-    ./m+1 ./beet.var ./beet.dat -a beetideal.txt
-    ./m+1 ./orientalis.var ./orientalisIND.dat -m 2 50 1 1 orINDout.txt
-    ./m+1 ./orientalis.var ./orientalisIND.dat -a orINDidealout.txt
-    ./m+1 ./WheatSNP.var ./WheatSNP.dat -m 20 21 1 20 ./WheatSNPout.txt
-    ./m+1 ./At.var ./At.dat -m 2 10 1 1 ./Atout.txt
-    ./m+1 ./At.var ./At.dat -m 2 10 1 1 ./Atoutr.txt -r
+    ./m+1 ./data/beet.var ./data/beet.dat -m 3 28 2 3 ./data/beetout.txt
+    ./m+1 ./data/beet.var ./data/beet.dat -m 3 28 2 3 ./data/beetoutk.txt -k ./data/beet.ker
+    ./m+1 ./data/beet.var ./data/beet.dat -a ./data/beetideal.txt
+    ./m+1 ./data/orientalis.var ./data/orientalisIND.dat -m 2 50 1 1 ./data/orINDout.txt
+    ./m+1 ./data/orientalis.var ./data/orientalisIND.dat -a ./data/orINDidealout.txt
+    ./m+1 ./data/WheatSNP.var ./data/WheatSNP.dat -m 20 21 1 20 ./data/WheatSNPout.txt
+    ./m+1 ./data/At.var ./data/At.dat -m 2 10 1 1 ./data/Atout.txt
+    ./m+1 ./data/At.var ./data/At.dat -m 2 10 1 1 ./data/Atoutr.txt -r
 
 
 **See also** the example scripts in the [`eg`](eg/) directory.
