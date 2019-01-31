@@ -49,3 +49,5 @@ modify variable `parallelism_enabled` in file [`m+.cpp`](https://github.com/NCGR
     ./m+1 ./At.var ./At.dat -m 2 10 1 1 ./Atout.txt
     ./m+1 ./At.var ./At.dat -m 2 10 1 1 ./Atoutr.txt -r
 
+
+**See also** the example scripts in the [`eg`](eg/) directory
