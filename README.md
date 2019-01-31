@@ -5,7 +5,21 @@
 C++ program that implements M+ optimization algorithm for core collection assembly
 
 ## Installation
-To compile:  use `make`
+
+The project uses [GNU Autotools](https://en.wikipedia.org/wiki/GNU_Build_System)
+as a build system.
+
+Building from a **release** involves the standard proceedure, namely:
+
+    ./configure
+    make
+    make install
+
+Building from a **git clone** requires an extra step to initialise the
+`configure` script. If you choose this route `autoreconf` is required.
+Run the following command:
+
+    autoreconf -i
 
 ## Usage
 
