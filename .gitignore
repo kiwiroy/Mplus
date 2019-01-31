@@ -1,3 +1,4 @@
+.deps/*
 Makefile
 Makefile.in
 aclocal.m4
@@ -8,3 +9,6 @@ eg.out/*
 install-sh
 m+1
 missing
+stamp-h1
+
+*.tar.gz
