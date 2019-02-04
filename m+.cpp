@@ -794,8 +794,8 @@ std::ifstream::pos_type filesize(const char* filename)
 int main( int argc, char* argv[] )
 {
 	//get mandatory command line arguments
-	char* VarFilePath = argv[1];
-	char* DatFilePath = argv[2];
+	char* VarFilePath = NULL;
+	char* DatFilePath = NULL;
 	
 	//initialize optional command line arguments
 	unsigned int MinCoreSize = 0;
@@ -816,45 +816,79 @@ int main( int argc, char* argv[] )
 	vector<std::string> KernelAccessionList;
 	vector<std::string> BadFiles;
 	string bf;
+        char command = 0;
+        int m_start = 0;
+
+        if (argc <= 1) {
+          cout << "R.T.F.M.\n";
+          return 1;
+        }
+
+        if (argc >= 3) {
+          VarFilePath = argv[1];
+          DatFilePath = argv[2];
+        }
 
 	//parse the command line for options
-	for (int i=0;i<argc;i++)
-	{
-		if ( string(argv[i]) == "-m" ) 
-    	{
-        	DoM = "yes";
-        	MinCoreSize = atoi(argv[i+1]);
-			MaxCoreSize = atoi(argv[i+2]);
-			SamplingFreq = atoi(argv[i+3]);
-			NumReplicates = atoi(argv[i+4]);
-			OutFilePath = argv[i+5];
-		}
-
-		if ( string(argv[i]) == "-r" ) 
-    	{
-        	Rarify = "yes";
-		}
-
-		if ( string(argv[i]) == "-k" ) 
-    	{
-        	Kernel = "yes";
-        	KerFilePath = argv[i+1];
-        	KernelAccessionList = MySetKernel(KerFilePath);
-			//verify that specified input file actually exists
-			if (fileExists(KerFilePath) == 0) 
-			{
-				bf = "KerFilePath = ";
-				bf += KerFilePath;
-				BadFiles.push_back(bf);
-			}
-		}
-		
-		if ( string(argv[i]) == "-a" ) 
-    	{
-        	Ideal = "yes";
-        	IdealFilePath = argv[i+1];
-		}
-	}
+        while ((command = getopt(argc, argv, "a:r:k:m:h")) != -1){
+          switch(command) {
+          case 'a':
+            Ideal = "yes";
+            IdealFilePath = optarg;
+            break;
+          case 'k':
+            Kernel = "yes";
+            KerFilePath = optarg;
+            //verify that specified input file actually exists
+            if (fileExists(KerFilePath) == 0)
+              {
+                bf = "KerFilePath = ";
+                bf += KerFilePath;
+                BadFiles.push_back(bf);
+              }
+            else
+              {
+                KernelAccessionList = MySetKernel(KerFilePath);
+              }
+            break;
+          case 'm':
+            m_start = --optind;
+            for( ;optind < m_start + 5 && optind < argc && *argv[optind] != '-'; ++optind){
+              switch (optind - m_start) {
+              case 0:
+                MinCoreSize = atoi(argv[optind]);
+                break;
+              case 1:
+                MaxCoreSize = atoi(argv[optind]);
+                break;
+              case 2:
+                SamplingFreq = atoi(argv[optind]);
+                break;
+              case 3:
+                NumReplicates = atoi(argv[optind]);
+                break;
+              case 4:
+                OutFilePath = argv[optind];
+                break;
+              default:
+                break;
+              }
+            }
+            if (5 == optind - m_start) {
+              DoM = "yes";
+            }
+            break;
+          case 'r':
+            Rarify = "yes";
+            break;
+          case 'h':
+            cout << "./m+1 VarFile DatFile [options]\n";
+            return 0;
+            break;
+          default:
+            break;
+          }
+        }
 	
 	//test whether all files specified on the command line exist
 	if (fileExists(VarFilePath) == 0) 
