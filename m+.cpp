@@ -1310,7 +1310,10 @@ int main( int argc, char* argv[] )
 	//PERFORM A*
 	if (Ideal == "yes")
 	{
-		int parallelism_enabled = 1; //0=no, not 0 = yes
+		int parallelism_enabled = 0; //0=no, not 0 = yes
+#ifdef ENABLE_PARALLELISM
+                parallelism_enabled = 1;
+#endif /* ifdef ENABLE_PARALLELISM */
 		if (parallelism_enabled == 0) cout << "\nBeginning serial A* search...\n\n";
 		else cout << "\nBeginning parallel A* search (" << ncpu << " threads)...\n\n";
 				

@@ -25,6 +25,15 @@ AC_TYPE_SIZE_T
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([floor strerror])
 
+AC_ARG_ENABLE([parallelism],
+    AS_HELP_STRING([--disable-parallelism], [Disable feature parallelism]))
+
+AS_IF([test "x$enable_parallelism" != "xno"], [
+   AC_MSG_NOTICE([enabling parallelism])
+   AC_DEFINE([ENABLE_PARALLELISM], [1], ["enabling parallel"])
+], [
+   AC_MSG_NOTICE([disabling parallelism])
+])
 AC_OPENMP
 AC_SUBST([AM_CXXFLAGS], "$OPENMP_CXXFLAGS $AM_CXXFLAGS")
 AC_CONFIG_FILES([Makefile])

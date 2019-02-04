@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* "enabling parallel" */
+#undef ENABLE_PARALLELISM
+
 /* Define to 1 if you have the `floor' function. */
 #undef HAVE_FLOOR
 

@@ -16,6 +16,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <vector>
+#include <config.h>
 using namespace std;
 
 /***************STRUCTS*****************/
