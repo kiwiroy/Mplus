@@ -1,4 +1,43 @@
-#include "m+.hpp"
+#include <m+.hpp>
+#include <argp.h>
+
+const char *argp_program_version = PACKAGE_STRING;
+const char *argp_program_bug_address = PACKAGE_BUGREPORT;
+/* Program documentation. */
+static char doc[] = PACKAGE_NAME " -- a program to compute core collections from MSTRAT files";
+/* A description of the arguments we accept. */
+static char args_doc[] = "MSTRAT_VAR_FILE MSTRAT_DAT_FILE";
+
+struct mplus_arguments
+{
+  char *varfilepath,
+    *datfilepath,
+    *outfilepath,
+    *kerfilepath,
+    *idealfilepath;
+  int dom,
+    rarefy,
+    kernel,
+    ideal;
+  int min_core,
+    max_core,
+    sampling_freq,
+    replicates;
+  vector<std::string> BadFiles;
+};
+
+/* The options we understand. */
+static struct argp_option options[] = {
+  {"kernel",      'k', "KERNEL FILE", 0,
+   "Use an MSTRAT .ker file to specify mandatory members of the core" },
+  {"model",       'm', "PARAMETERS",  0,
+   "Specify the <mincoresize> <maxcoresize> <samplingfreq> <reps> <outfile> parameters." },
+  {"rarefaction", 'r', 0,             0,
+   "Use rarefaction to correct for differences in sample size of accessions" },
+  {"ideal",       'a', "IDEAL FILE",  0,
+   "Create an ideal core file. Compute the minimum set of accessions" },
+  { 0 }
+};
 
 /***************FUNCTIONS*****************/
 
@@ -789,13 +828,152 @@ std::ifstream::pos_type filesize(const char* filename)
 
 
 
+
+static error_t
+consume_model_parameters(mplus_arguments *arguments, struct argp_state *state)
+{
+  int result = 0;
+  int current = --(state->next);
+  /* consume up to five values */
+  for(int limit = current + 5 ;
+      current < limit && current < state->argc && *(state->argv[current]) != '-';
+      ++current){
+    char *arg = state->argv[current]; // argument current value
+    switch(current - state->next)
+      {
+      case 0:
+        arguments->min_core = atoi(arg);
+        break;
+      case 1:
+        arguments->max_core = atoi(arg);
+        break;
+      case 2:
+        arguments->sampling_freq = atoi(arg);
+        break;
+      case 3:
+        arguments->replicates = atoi(arg);
+        break;
+      case 4:
+        arguments->outfilepath = arg;
+        break;
+      default:
+        break;
+      }
+  }
+
+  arguments->dom = current - state->next; // calculate number consumed
+  state->next = current; // always update
+  // check we have enough values.
+  if (5 > arguments->dom)
+    {
+      result = EINVAL;
+    }
+
+  return result;
+}
+
+/* Parse a single option. */
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
+{
+  struct mplus_arguments *arguments = (mplus_arguments *)state->input;
+  int result = 0;
+
+  switch (key)
+    {
+    case ARGP_KEY_ARG:
+      if(state->arg_num == 0)
+        {
+          if (fileExists(arg)) {
+            arguments->varfilepath = arg;
+          } else {
+            arguments->BadFiles.push_back(arg);
+            result = ENOENT;
+          }
+        }
+      else if (state->arg_num == 1)
+        {
+          if (fileExists(arg)) {
+            arguments->datfilepath = arg;
+          } else {
+            arguments->BadFiles.push_back(arg);
+            result = ENOENT;
+          }
+        }
+      else
+        {
+          result = ARGP_ERR_UNKNOWN;
+        }
+      break;
+    case 'a':
+      arguments->ideal         = 1;
+      arguments->idealfilepath = arg;
+      break;
+    case 'k':
+      if (fileExists(arg)) {
+        arguments->kernel      = 1;
+        arguments->kerfilepath = arg;
+      } else {
+        arguments->BadFiles.push_back(arg);
+        result = ENOENT;
+      }
+      break;
+    case 'm':
+      result = consume_model_parameters(arguments, state);
+      break;
+    case 'r':
+      arguments->rarefy = 1;
+      break;
+    case ARGP_KEY_INIT:
+      //cerr << "init\n";
+      break;
+    case ARGP_KEY_END:
+      //cerr << "end\n";
+      if (arguments->varfilepath == NULL ||
+          arguments->datfilepath == NULL)
+        {
+          cerr << "\n";
+          argp_usage(state);
+          result = EINVAL;
+        }
+      break;
+    case ARGP_KEY_SUCCESS:
+      //cerr << "success\n";
+      break;
+    case ARGP_KEY_FINI:
+      //cerr << "finish\n";
+      break;
+    case ARGP_KEY_ERROR:
+      cerr << "[Error] parsing command line failed\n\n";
+      if (arguments->BadFiles.size() > 0)
+	{
+          cout << "\nThe following variables appear to contain misspecified paths:\n";
+          for (unsigned int i=0;i < arguments->BadFiles.size(); ++i)
+            {
+              cout << "  " << arguments->BadFiles[i] << "\n";
+            }
+          cout << "\nPlease check the command line.  Quitting...\n\n";
+        }
+      argp_state_help(state, state->err_stream, ARGP_HELP_STD_HELP);
+      break;
+    case ARGP_KEY_ARGS:
+    default:
+      // cerr << "key = " << key << "\n";
+      result = ARGP_ERR_UNKNOWN;
+      break;
+    }
+  return result;
+}
+
+static struct argp argp = { options, parse_opt, args_doc, doc };
+
 /***************MAIN*****************/
 
 int main( int argc, char* argv[] )
 {
 	//get mandatory command line arguments
-	char* VarFilePath = argv[1];
-	char* DatFilePath = argv[2];
+	char* VarFilePath = NULL;
+	char* DatFilePath = NULL;
 	
 	//initialize optional command line arguments
 	unsigned int MinCoreSize = 0;
@@ -814,78 +992,36 @@ int main( int argc, char* argv[] )
 	string Kernel = "no"; //switch to include a mandatory set in the core
 	string Ideal = "no"; //switch to compute the ideal core, using A* algorithm
 	vector<std::string> KernelAccessionList;
-	vector<std::string> BadFiles;
 	string bf;
+        int parser_result;
+        struct mplus_arguments arguments = { NULL, NULL, NULL, NULL, NULL, 0 };
 
-	//parse the command line for options
-	for (int i=0;i<argc;i++)
-	{
-		if ( string(argv[i]) == "-m" ) 
-    	{
-        	DoM = "yes";
-        	MinCoreSize = atoi(argv[i+1]);
-			MaxCoreSize = atoi(argv[i+2]);
-			SamplingFreq = atoi(argv[i+3]);
-			NumReplicates = atoi(argv[i+4]);
-			OutFilePath = argv[i+5];
-		}
+        if(0 != (parser_result = argp_parse(&argp, argc, argv, 0, 0,
+                                            &arguments)))
+          {
+            /* error should be caught before here. */
+            cerr << "[Error] parsing command line failed (" << parser_result << ")";
+            cerr << "\n\n";
+            return 1;
+          }
 
-		if ( string(argv[i]) == "-r" ) 
-    	{
-        	Rarify = "yes";
-		}
-
-		if ( string(argv[i]) == "-k" ) 
-    	{
-        	Kernel = "yes";
-        	KerFilePath = argv[i+1];
-        	KernelAccessionList = MySetKernel(KerFilePath);
-			//verify that specified input file actually exists
-			if (fileExists(KerFilePath) == 0) 
-			{
-				bf = "KerFilePath = ";
-				bf += KerFilePath;
-				BadFiles.push_back(bf);
-			}
-		}
-		
-		if ( string(argv[i]) == "-a" ) 
-    	{
-        	Ideal = "yes";
-        	IdealFilePath = argv[i+1];
-		}
-	}
-	
-	//test whether all files specified on the command line exist
-	if (fileExists(VarFilePath) == 0) 
-	{
-		bf = "VarFilePath = ";
-		bf += VarFilePath;
-		BadFiles.push_back(bf);
-	}
-	if (fileExists(DatFilePath) == 0) 
-	{
-		bf = "DatFilePath = ";
-		bf += DatFilePath;
-		BadFiles.push_back(bf);
-	}
-	
-	if (BadFiles.size() > 0)
-	{
-		cout << "\nThe following variables appear to contain misspecified paths:\n";
-		for (i=0;i<BadFiles.size();++i)
-		{
-			cout << "  " << BadFiles[i] << "\n";
-		}
-		cout << "\nPlease check the command line.  Quitting...\n\n";
-		exit (EXIT_FAILURE);
-	}
-	
+        VarFilePath = arguments.varfilepath;
+        DatFilePath = arguments.datfilepath;
+        DoM    = (arguments.dom    == 5 ? "yes" : "no");
+        Ideal  = (arguments.ideal  == 1 ? "yes" : "no");
+        Kernel = (arguments.kernel == 1 ? "yes" : "no");
+        Rarify = (arguments.rarefy == 1 ? "yes" : "no");
 	//print out input variables
 	cout << "\nInput variables:\n  VarFilePath = " << VarFilePath << "\n";
 	cout << "  DatFilePath = " << DatFilePath << "\n";
 	if (DoM == "yes")
 	{
+		MinCoreSize = arguments.min_core;
+		MaxCoreSize = arguments.max_core;
+		SamplingFreq = arguments.sampling_freq;
+		NumReplicates = arguments.replicates;
+		OutFilePath = arguments.outfilepath;
+
 		cout << "  -m invoked:\n";
 		cout << "    MinCoreSize = " << MinCoreSize << "\n";
 		cout << "    MaxCoreSize = " << MaxCoreSize << "\n";
@@ -900,11 +1036,13 @@ int main( int argc, char* argv[] )
 	}
 	if (Kernel == "yes") 
 	{
+		KerFilePath = arguments.kerfilepath;
 		cout << "  -k invoked:\n";
 		cout << "    KerFilePath = " << KerFilePath << "\n";
 	}
 	if (Ideal == "yes")
 	{
+		IdealFilePath = arguments.idealfilepath;
 		cout << "  -a invoked:\n";
 		cout << "    IdealFilePath = " << IdealFilePath << "\n";
 	}

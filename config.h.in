@@ -3,6 +3,9 @@
 /* "enabling parallel" */
 #undef ENABLE_PARALLELISM
 
+/* Define to 1 if you have the <argp.h> header file. */
+#undef HAVE_ARGP_H
+
 /* Define to 1 if you have the `floor' function. */
 #undef HAVE_FLOOR
 
